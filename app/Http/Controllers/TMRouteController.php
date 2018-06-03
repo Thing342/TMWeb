@@ -8,6 +8,7 @@ use App\TMRoute;
 
 use App\TMSystem;
 use App\TMTraveler;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -202,4 +203,17 @@ class TMRouteController extends Controller
     {
         return $connRte->routes;
     }
+
+    function addFilters(Builder $q, ?array $regions, ?array $systems): Builder {
+        if ($regions) {
+            $q = $q->whereIn('region', $regions);
+        }
+
+        if ($systems) {
+            $q = $q->whereIn('systemName', $systems);
+        }
+
+        return $q;
+    }
+
 }

@@ -6,3 +6,7 @@
 .flex-grow {
     flex: 0 1 auto;
 }
+
+.route-clinched {
+    font-weight: bold;
+}

@@ -11,7 +11,7 @@
                 <div class="bigshield">@component('shields.shield', ['route' => $route]) @endcomponent</div>
                 <h5 class="card-title">{{ $route->display_name() }}</h5>
                 <small class="card-text text-muted">.list name: {{ $route->list_name() }}</small>
-                <table id="routeInfo" class="table table-sm">
+                <table id="routeInfo" class="table table-sm" style="font-size: small">
                     <tbody>
                     <tr>
                         <td class="important">Length</td>
@@ -55,7 +55,7 @@
             </button>
         </div>
         <div class="collapse show" id="waypoints">
-            <table class="table table-sm">
+            <table class="table table-sm" style="font-size: small">
                 <thead><tr><td>Name</td><td>%</td></tr></thead>
                 <tbody>
                     @foreach($route->visibleWaypoints as $waypoint)
