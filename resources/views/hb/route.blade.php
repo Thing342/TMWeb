@@ -40,15 +40,21 @@
 @endsection
 
 @section('js')
-    <!-- TODO: eliminate hack -->
-    <script type="application/javascript" src="http://tml.teresco.org/lib/waypoints.js.php?r={{ $route->root }}"></script>
     <script type="application/javascript">
         let units = 'mi';
 
         $(document).ready(function () {
             loadmap();
-            waypointsFromSQL();
-            updateMap();
+            $.get("/api/waypoints?r={{ $route->root }}&u=thing342", function (data) {
+                console.log(data);
+                waypoints = data.waypoints;
+                genEdges = data.genEdges;
+                mapClinched = data.mapClinched;
+                routeColor = data.routeColor;
+                segments = data.segments;
+                clinched = data.clinched;
+                updateMap();
+            });
         });
 
         $('#unitsSelect').on('change', function () {

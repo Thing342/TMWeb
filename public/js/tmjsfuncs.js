@@ -249,9 +249,7 @@ function loadmap() {
         renderer: L.canvas()
     });
 
-    // set with initial coordinates at Roger Bacon 321 at Siena
-    // College
-    map.setView([42.719450, -73.752063], 16);
+    map.setView([0, 0], 16);
 
     var osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
     var osmAttrib = 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors';
@@ -631,7 +629,7 @@ function markerInfo(i, wpt) {
         intersections = "<p>Intersecting/Concurrent Routes:<br />";
         for (var j = 0; j < wpt.intersecting.length; j++) {
             r = wpt.intersecting[j];
-            intersections += "<a href=\"/hb/?r=" + r.root + "\">" + r.region + " " + r.route + " " + r.banner;
+            intersections += "<a href=\"/routes/" + r.root + "\">" + r.region + " " + r.route + " " + r.banner;
             if (r.city != "") {
                 intersections += "(" + r.city + ")";
             }

@@ -13,19 +13,5 @@ use Illuminate\Http\Request;
 |
 */
 
-/*
-\Event::listen('Illuminate\Database\Events\QueryExecuted', function ($query) {
-    echo'<pre>';
-    var_dump($query->sql);
-    var_dump($query->bindings);
-    var_dump($query->time);
-    echo'</pre>';
-});
-*/
-
-Route::get('routes/{route}/waypoints', 'TMRouteController@waypoints')->name('route.waypoints');
-Route::get('routes/{route}/segments', 'TMRouteController@segments')->name('route.segments');
-Route::get('connRoutes/{connRte}', 'TMRouteController@connectedRoute')->name('connRte.read');
-
-Route::get('travelers/{traveler}/routes/{root}', 'TMTravelerController@clinchedSegments')->name('traveler.segments');
-Route::get('travelers/{traveler}/routes', 'TMTravelerController@clinchedRoutes')->name('traveler.routes');
+Route::get('waypoints', 'TMAPIController@pointinfo')->name('api.waypoints');
+Route::get('travelers/{traveler}/pointinfo', 'TMTravelerController@clinchedRoutes')->name('traveler.routes');

@@ -174,20 +174,6 @@ class TMRouteController extends Controller
         return view('hb.route', $context);
     }
 
-    function waypoints(TMRoute $route)
-    {
-        return $route->waypoints()
-            ->get()
-            ->keyBy('pointId');
-    }
-
-    function segments(TMRoute $route)
-    {
-        return $route->segments()
-            ->get()
-            ->keyBy('segmentId');
-    }
-
     function clinchedSegments(string $route, string $traveler)
     {
         return DB::table("clinched")
@@ -197,23 +183,6 @@ class TMRouteController extends Controller
             ->where("clinched.traveler", '=', $traveler)
             ->orderBy("clinched.segmentId")
             ->pluck("clinched.segmentId");
-    }
-
-    function connectedRoute(TMConnectedRoute $connRte)
-    {
-        return $connRte->routes;
-    }
-
-    function addFilters(Builder $q, ?array $regions, ?array $systems): Builder {
-        if ($regions) {
-            $q = $q->whereIn('region', $regions);
-        }
-
-        if ($systems) {
-            $q = $q->whereIn('systemName', $systems);
-        }
-
-        return $q;
     }
 
 }

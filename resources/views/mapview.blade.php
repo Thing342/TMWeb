@@ -98,14 +98,36 @@
 
 @section('js')
     <!-- TODO: eliminate hack -->
-    <script type="application/javascript" src="http://tml.teresco.org/lib/waypoints.js.php{{ $apiQueryString }}"></script>
     <script type="application/javascript">
         let units = 'mi';
 
         $(document).ready(function () {
-            loadmap();
-            waypointsFromSQL();
-            updateMap();
+            $.get("/api/waypoints{!! $apiQueryString !!}", function (data) {
+                console.log(data);
+                waypoints = data.waypoints;
+
+                newRouteIndices = data.newRouteIndices;
+                routeTier = data.routeTier;
+                routeColor = data.routeColor;
+                routeSystem = data.routeSystem;
+
+                traveler = data.traveler;
+
+                segments = data.segments;
+                clinched = data.clinched;
+
+                genEdges = data.genEdges;
+                mapClinched = data.mapClinched;
+
+                loadmap();
+                updateMap();
+
+                clinched.forEach((it) => {
+                    if (it === 209976) {
+                        console.log("Hello!")
+                    }
+                })
+            });
         });
 
         $('#unitsSelect').on('change', function () {
