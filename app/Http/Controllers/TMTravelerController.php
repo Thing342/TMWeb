@@ -10,16 +10,18 @@ use Illuminate\Support\Facades\DB;
 
 class TMTravelerController extends Controller
 {
-    /*
-    function clinchedSegments(string $traveler, string $root) {
-        return DB::table("clinched")
-            ->join("segments", "segments.segmentId", '=', "clinched.segmentId")
-            ->join("routes", "routes.root", '=', "segments.root")
-            ->where("routes.root", '=', $root)
-            ->where("clinched.traveler", '=', $traveler)
-            ->orderBy("clinched.segmentId")
-            ->pluck("clinched.segmentId");
-    }*/
+    function changeUser(Request $request) {
+        $oldUser = $request->session()->get('user', null);
+        $newUser = $request->get('user', null);
+
+        if ($newUser == "") {
+            $request->session()->put('user', null);
+        } else if($newUser != null && $newUser != $oldUser) {
+            $request->session()->put('user', $newUser);
+        }
+
+        return back();
+    }
 
     function mapview(TMTraveler $traveler, Request $request) {
         $rgcode = $request->input('rg', null);

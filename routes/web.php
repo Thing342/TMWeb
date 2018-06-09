@@ -29,3 +29,4 @@ Route::get('/routes/bySystemRegion/{system}/{region}', 'TMRouteController@index'
 Route::get('/routes/{route}', 'TMRouteController@read')->name('route.read');
 
 Route::get('/users/{traveler}/mapview', 'TMTravelerController@mapview')->name('mapview');
+Route::post('/users/change', 'TMTravelerController@changeUser')->name('travelers.change');

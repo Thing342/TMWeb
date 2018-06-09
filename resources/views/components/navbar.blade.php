@@ -27,9 +27,17 @@
                 <a class="nav-link" href="#">Updates</a>
             </li>
         </ul>
+        <form action="{{ route('travelers.change') }}" class="form-inline my-2 my-lg-0" method="post">
+            @csrf
+            <select name="user" id="userSelect" class="form-control mr-sm-2"
+                    @if(session('user')) data-selected-user="{{ session('user') }}" @endif>
+                <option value="" selected>Select User</option>
+            </select>
+            <button class="btn btn-outline-secondary my-2 my-sm-0 mr-2" type="submit">Change</button>
+        </form>
         <form class="form-inline my-2 my-lg-0" action="{{ route('route.browser') }}">
             @csrf
-            <input class="form-control mr-sm-2" type="search" placeholder="Search Routes" aria-label="Search" name="query">
+            <input class="form-control mr-sm-2" type="search" placeholder="Search Routes" aria-label="Search" name="query" style="max-width: 150px">
             <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
         </form>
     </div>

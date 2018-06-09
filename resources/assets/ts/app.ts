@@ -5,7 +5,11 @@ import {LatLngExpression, marker} from "leaflet";
 import htmlString = JQuery.htmlString;
 
 
-console.log('test');
+(function () {
+    const select = $('#userSelect');
+    const selectedUser = select.data('selected-user'); // Should be null if not used
+    populateUserSelect(select, selectedUser);
+})();
 
 
 const intersectionimage = new leaflet.Icon({
@@ -50,6 +54,12 @@ export interface Route {
     segments: Segment[],
     tier: number,
     color: string
+}
+
+export interface Traveler {
+    traveler: string,
+    overallActiveMileage: number,
+    overallActivePreviewMileage: number
 }
 
 export interface MapState {
@@ -216,6 +226,20 @@ function convertUnit(measurement, fromUnit, toUnit) {
     if (fromUnit === 'km' && toUnit === 'mi') {
         return measurement / 1.60934
     }
+}
+
+async function populateUserSelect(select: JQuery<HTMLElement>, selectedUser?: string) : Promise<Traveler[]> {
+    console.log(selectedUser);
+
+    const resp = await fetch('/api/travelers');
+    const data: Traveler[] = await resp.json();
+
+    select.html("<option value=\"\" selected>Select User</option>" + data.map((it) => {
+        const selectedStr = (it.traveler == selectedUser) ? "selected" : "";
+        return `<option value='${it.traveler}' ${selectedStr}>${it.traveler}</option>`
+    }).join(""));
+
+    return data;
 }
 
 

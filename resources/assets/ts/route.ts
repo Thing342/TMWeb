@@ -4,6 +4,7 @@ import * as $ from 'jquery';
 
 let units = 'mi';
 
+/*
 $(document).ready(function () {
     let mapState = loadmap('map');
     let root = $('#map').data('root');
@@ -13,6 +14,19 @@ $(document).ready(function () {
         mapState = drawPoints(data.routes, mapState, data.mapClinched, data.genEdges);
     })
 });
+*/
+
+(async function () {
+    let root = $('#map').data('root');
+    let req = fetch(`/api/waypoints?r=${root}`);
+    let mapState = loadmap('map');
+
+    let resp = await req;
+    let data = await resp.json();
+
+    console.log(data);
+    mapState = drawPoints(data.routes, mapState, data.mapClinched, data.genEdges);
+})();
 
 /**
 $('#unitsSelect').on('change', function () {
