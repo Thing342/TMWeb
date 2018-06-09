@@ -1,20 +1,9 @@
 import {convertAllUnits, drawPoints, loadmap} from "./app";
 
 import * as $ from 'jquery';
+import 'datatables.net';
 
 let units = 'mi';
-
-/*
-$(document).ready(function () {
-    let mapState = loadmap('map');
-    let root = $('#map').data('root');
-
-    $.get(`/api/waypoints?r=${root}`, function (data) {
-        console.log(data);
-        mapState = drawPoints(data.routes, mapState, data.mapClinched, data.genEdges);
-    })
-});
-*/
 
 (async function () {
     let root = $('#map').data('root');
@@ -28,13 +17,9 @@ $(document).ready(function () {
     mapState = drawPoints(data.routes, mapState, data.mapClinched, data.genEdges);
 })();
 
-/**
+
 $('#unitsSelect').on('change', function () {
-    let newunits = this.value;
+    let newunits = (this as HTMLInputElement).value;
     convertAllUnits(units, newunits);
     units = newunits;
 });
-
-$('#showMarkers').on('click', function () {
-    //showMarkersClicked();
-});**/

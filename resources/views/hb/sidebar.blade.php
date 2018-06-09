@@ -55,7 +55,7 @@
             </button>
         </div>
         <div class="collapse show" id="waypoints">
-            <table class="table table-sm" style="font-size: small">
+            <table id="wptTable" class="table table-sm" style="font-size: small">
                 <thead><tr><td>Name</td><td>%</td></tr></thead>
                 <tbody>
                     @foreach($route->visibleWaypoints as $waypoint)

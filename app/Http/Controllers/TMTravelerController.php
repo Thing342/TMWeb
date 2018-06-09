@@ -10,31 +10,33 @@ use Illuminate\Support\Facades\DB;
 
 class TMTravelerController extends Controller
 {
-    function changeUser(Request $request) {
+    function changeUser(Request $request)
+    {
         $oldUser = $request->session()->get('user', null);
         $newUser = $request->get('user', null);
 
         if ($newUser == "") {
             $request->session()->put('user', null);
-        } else if($newUser != null && $newUser != $oldUser) {
+        } else if ($newUser != null && $newUser != $oldUser) {
             $request->session()->put('user', $newUser);
         }
 
         return back();
     }
 
-    function mapview(TMTraveler $traveler, Request $request) {
+    function mapview(TMTraveler $traveler, Request $request)
+    {
         $rgcode = $request->input('rg', null);
         $syscode = $request->input('sys', null);
         $conroot = $request->input('conn', null);
 
         $query = TMRoute::query();
         $query = $query->with('system');
-        $query = $query->with(['travelers' => function($query) use($traveler) {
+        $query = $query->with(['travelers' => function ($query) use ($traveler) {
             $query->where('clinchedRoutes.traveler', '=', $traveler->traveler);
         }]);
 
-        $apiQueryString = "?u=" . $traveler->traveler ;
+        $apiQueryString = "?u=" . $traveler->traveler;
         if ($rgcode) {
             $query = $query->where('region', '=', $rgcode);
             $apiQueryString .= "&rg=" . $rgcode;
@@ -44,12 +46,14 @@ class TMTravelerController extends Controller
             $apiQueryString .= "&sys=" . $syscode;
         }
         if ($conroot) {
-            $query = $query->with(['connectedRoutes' => function($query) use($conroot) {
+            $query = $query->with(['connectedRoutes' => function ($query) use ($conroot) {
                 $query->where('connectedRoutes.firstRoot', '=', $conroot);
             }]);
         }
 
-        $routes = $query->get()->sortBy(function ($it) { return $it->system->tier . $it->systemName . $it->root; });
+        $routes = $query->get()->sortBy(function ($it) {
+            return $it->system->tier . $it->systemName . $it->root;
+        });
 
         $context = [
             'traveler' => $traveler,
@@ -60,14 +64,33 @@ class TMTravelerController extends Controller
         return view('mapview', $context);
     }
 
-    function clinchedSegments(TMTraveler $traveler, string $root) {
+    function leaderboard(Request $request)
+    {
+        $travelers = TMTraveler::orderBy('overallActiveMileage', 'DESC')->get();
+        $totalMileage = DB::select("SELECT sum(activeMileage) AS activeMileage, sum(activePreviewMileage) AS activePreviewMileage FROM overallMileageByRegion")[0];
+
+        $traveler = null;
+        if ($request->session()->get('user')) {
+            $traveler = TMTraveler::find($request->session()->get('user'));
+        }
+
+        return view('user.leaderboard', [
+           'travelers' => $travelers,
+           'totals' => $totalMileage,
+           'traveler' => $traveler
+        ]);
+    }
+
+    function clinchedSegments(TMTraveler $traveler, string $root)
+    {
         return $traveler->segments()
             ->where('root', '=', $root)
             ->orderBy("clinched.segmentId")
             ->pluck("clinched.segmentId");
     }
 
-    function clinchedRoutes(TMTraveler $traveler) {
+    function clinchedRoutes(TMTraveler $traveler)
+    {
         return $traveler->routes;
     }
 }

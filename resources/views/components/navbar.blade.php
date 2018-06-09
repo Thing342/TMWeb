@@ -15,7 +15,7 @@
                 <a class="nav-link" href="{{ route('home') }}">Home <span class="sr-only">(current)</span></a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#">Traveler Stats</a>
+                <a class="nav-link" href="{{ route('travelers.leaderboard') }}">Traveler Stats</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="{{ route('route.browser') }}">Highway Browser</a>
