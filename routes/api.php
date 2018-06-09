@@ -13,5 +13,15 @@ use Illuminate\Http\Request;
 |
 */
 
+/* uncomment to debug queries
+Event::listen('Illuminate\Database\Events\QueryExecuted', function ($query) {
+    echo '<pre>';
+    var_dump($query->sql);
+    var_dump($query->bindings);
+    var_dump($query->time);
+    echo '</pre>';
+});
+*/
+
 Route::get('waypoints', 'TMAPIController@pointinfo')->name('api.waypoints');
-Route::get('travelers/{traveler}/pointinfo', 'TMTravelerController@clinchedRoutes')->name('traveler.routes');
+Route::get('travelers', 'TMAPIController@travelers')->name('api.travelers');

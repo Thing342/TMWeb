@@ -10,11 +10,12 @@ use Illuminate\Support\Facades\DB;
 
 class TMAPIController extends Controller
 {
-    function pointinfo(Request $request) {
+    function pointinfo(Request $request)
+    {
         $ucode = $request->input('u', null);
         $rcode = $request->input('r', null);
 
-        if($rcode) {
+        if ($rcode) {
             $tmroute = TMRoute::findOrFail($rcode);
             $tmtraveler = TMTraveler::find($ucode);
             return $this->pointinfo_single($tmroute, $request, $tmtraveler);
@@ -24,7 +25,13 @@ class TMAPIController extends Controller
         }
     }
 
-    private function routeinfo($route) {
+    function travelers()
+    {
+        return TMTraveler::query()->orderBy('traveler')->get();
+    }
+
+    private function routeinfo($route)
+    {
         return [
             "root" => $route->root,
             "route" => $route->route,
@@ -35,7 +42,8 @@ class TMAPIController extends Controller
         ];
     }
 
-    private function apply_filters(Builder $query, Request $request): Builder {
+    private function apply_filters(Builder $query, Request $request): Builder
+    {
         $rgcode = $request->input('rg', null);
         $syscode = $request->input('sys', null);
         $conroot = $request->input('conn', null);
@@ -57,12 +65,11 @@ class TMAPIController extends Controller
     private function pointinfo_multi(TMTraveler $traveler, Request $request)
     {
         $query = TMRoute::query();
-        $query = $query->with(['system', 'waypoints', 'segments']);
-        $query = $query->with(['segments.clinched' => function($query) use($traveler) {
+        $query = $query->with(['system', 'waypoints', 'segments', 'segments.clinched' => function ($query) use ($traveler) {
             $query->where('clinched.traveler', '=', $traveler->traveler);
         }]);
         $query = $this->apply_filters($query, $request);
-        $routes = $query->cursor();
+        $routes = $query->get();
 
         $resp = [];
         foreach ($routes as $route) {
@@ -105,64 +112,65 @@ class TMAPIController extends Controller
         ];
 
         /**
-        $routeNames = $query->pluck('routes.root');
-
-        $clinched = $traveler->segments()
-            ->whereIn('segments.root', $routeNames)
-            ->pluck('segments.segmentId');
-
-        $resp = [
-            'waypoints' => [],
-
-            'newRouteIndices' => [],
-            'routeTier' => [],
-            'routeColor' => [],
-            'routeSystem' => [],
-
-            'traveler' => $traveler->traveler,
-
-            'segments' => [],
-            'clinched' => $clinched,
-
-            'mapClinched' => true,
-            'genEdges' => true
-        ];
-
-        $i = 0;
-        $windex = 0;
-        $sindex = 0;
-        foreach ($routes as $route) {
-            $resp['routeTier'][] = $route->system->tier;
-            $resp['routeColor'][] = $route->system->color;
-            $resp['routeSystem'][] = $route->systemName;
-            $resp['newRouteIndices'][] = $windex;
-
-            foreach ($route->waypoints as $waypoint) {
-                $resp['waypoints'][] = [
-                    'label' => $waypoint->pointName,
-                    'lat' => $waypoint->latitude,
-                    'lon' => $waypoint->longitude,
-                    'visible' => $waypoint->pointName[0] != '+',
-                    'elabel' => "",
-                    'edgeList' => [],
-                    'intersecting' => []
-                ];
-                $windex++;
-            }
-
-            foreach ($route->segments as $segment) {
-                $resp['segments'][] = $segment->segmentId;
-                $sindex++;
-            }
-
-            $i++;
-        }
-
-        return $resp;
+         * $routeNames = $query->pluck('routes.root');
+         *
+         * $clinched = $traveler->segments()
+         * ->whereIn('segments.root', $routeNames)
+         * ->pluck('segments.segmentId');
+         *
+         * $resp = [
+         * 'waypoints' => [],
+         *
+         * 'newRouteIndices' => [],
+         * 'routeTier' => [],
+         * 'routeColor' => [],
+         * 'routeSystem' => [],
+         *
+         * 'traveler' => $traveler->traveler,
+         *
+         * 'segments' => [],
+         * 'clinched' => $clinched,
+         *
+         * 'mapClinched' => true,
+         * 'genEdges' => true
+         * ];
+         *
+         * $i = 0;
+         * $windex = 0;
+         * $sindex = 0;
+         * foreach ($routes as $route) {
+         * $resp['routeTier'][] = $route->system->tier;
+         * $resp['routeColor'][] = $route->system->color;
+         * $resp['routeSystem'][] = $route->systemName;
+         * $resp['newRouteIndices'][] = $windex;
+         *
+         * foreach ($route->waypoints as $waypoint) {
+         * $resp['waypoints'][] = [
+         * 'label' => $waypoint->pointName,
+         * 'lat' => $waypoint->latitude,
+         * 'lon' => $waypoint->longitude,
+         * 'visible' => $waypoint->pointName[0] != '+',
+         * 'elabel' => "",
+         * 'edgeList' => [],
+         * 'intersecting' => []
+         * ];
+         * $windex++;
+         * }
+         *
+         * foreach ($route->segments as $segment) {
+         * $resp['segments'][] = $segment->segmentId;
+         * $sindex++;
+         * }
+         *
+         * $i++;
+         * }
+         *
+         * return $resp;
          * **/
     }
 
-    private function pointinfo_single(TMRoute $route, Request $request, ?TMTraveler $traveler = null) {
+    private function pointinfo_single(TMRoute $route, Request $request, ?TMTraveler $traveler = null)
+    {
         $resp = [
             "info" => $this->routeinfo($route),
             "waypoints" => [],
@@ -180,7 +188,7 @@ WHERE w.root = :root;", ["root" => $route->root]);
         $wpt = null;
         foreach ($wpt_set as $record) {
             if ($wpt == null || $wpt['pointId'] != $record->pointId) {
-                if($wpt != null) {
+                if ($wpt != null) {
                     $resp['waypoints'][$wpt['pointId']] = $wpt;
                 }
                 $wpt = [
@@ -194,16 +202,16 @@ WHERE w.root = :root;", ["root" => $route->root]);
                 ];
             }
 
-            if($record->root != null) {
+            if ($record->root != null) {
                 $wpt['intersecting'][] = $this->routeinfo($record);
             }
         }
-        if($wpt != null) {
+        if ($wpt != null) {
             $resp['waypoints'][$wpt['pointId']] = $wpt;
         }
 
         $segmentSet = $route->segments()->orderBy('segmentId')->get();
-        if($traveler) {
+        if ($traveler) {
             $clinchedSet = $traveler
                 ->segments()
                 ->where('root', '=', $route->root)
@@ -212,7 +220,7 @@ WHERE w.root = :root;", ["root" => $route->root]);
 
             $csIndex = 0;
             foreach ($segmentSet as $item) {
-                if(($csIndex < sizeof($clinchedSet) ) && ($item->segmentId == $clinchedSet[$csIndex])) {
+                if (($csIndex < sizeof($clinchedSet)) && ($item->segmentId == $clinchedSet[$csIndex])) {
                     $clinched = true;
                     $csIndex += 1;
                 } else {
