@@ -24,6 +24,17 @@ class TMAPIController extends Controller
         }
     }
 
+    private function routeinfo($route) {
+        return [
+            "root" => $route->root,
+            "route" => $route->route,
+            "systemName" => $route->systemName,
+            "banner" => $route->banner,
+            "abbrev" => $route->abbrev,
+            "city" => $route->city
+        ];
+    }
+
     private function apply_filters(Builder $query, Request $request): Builder {
         $rgcode = $request->input('rg', null);
         $syscode = $request->input('sys', null);
@@ -47,9 +58,53 @@ class TMAPIController extends Controller
     {
         $query = TMRoute::query();
         $query = $query->with(['system', 'waypoints', 'segments']);
+        $query = $query->with(['segments.clinched' => function($query) use($traveler) {
+            $query->where('clinched.traveler', '=', $traveler->traveler);
+        }]);
         $query = $this->apply_filters($query, $request);
-        $query = $query->orderBy('root');
-        $routes = $query->get();
+        $routes = $query->cursor();
+
+        $resp = [];
+        foreach ($routes as $route) {
+            $r = [
+                "info" => $this->routeinfo($route),
+                "waypoints" => [],
+                "segments" => [],
+                "tier" => $route->system->tier,
+                "color" => $route->system->color,
+            ];
+
+            foreach ($route->waypoints as $waypoint) {
+                $r['waypoints'][$waypoint->pointId] = [
+                    'pointId' => $waypoint->pointId,
+                    'label' => $waypoint->pointName,
+                    'lat' => $waypoint->latitude,
+                    'lon' => $waypoint->longitude,
+                    'elabel' => "",
+                    'edgeList' => [],
+                    'intersecting' => []
+                ];
+            }
+
+            foreach ($route->segments as $segment) {
+                $r['segments'][] = [
+                    'segmentId' => $segment->segmentId,
+                    'fromID' => $segment['waypoint1'],
+                    'toID' => $segment['waypoint2'],
+                    'clinched' => (sizeof($segment->clinched) > 0)
+                ];
+            }
+
+            $resp[] = $r;
+        }
+
+        return [
+            'mapClinched' => true,
+            'genEdges' => true,
+            'routes' => $resp
+        ];
+
+        /**
         $routeNames = $query->pluck('routes.root');
 
         $clinched = $traveler->segments()
@@ -104,75 +159,88 @@ class TMAPIController extends Controller
         }
 
         return $resp;
+         * **/
     }
 
     private function pointinfo_single(TMRoute $route, Request $request, ?TMTraveler $traveler = null) {
         $resp = [
-            'waypoints' => [],
-
-            'routeTier' => "",
-            'routeColor' => "",
-            'routeSystem' => "",
-
-            'segments' => $route->segments()->pluck('segments.segmentId'),
-
-            'mapClinched' => false,
-            'genEdges' => true
+            "info" => $this->routeinfo($route),
+            "waypoints" => [],
+            "segments" => [],
+            "color" => $route->system->color,
+            "tier" => $route->system->tier,
         ];
 
-        $resp['routeTier'] = $route->system->tier;
-        $resp['routeColor'] = $route->system->color;
-        $resp['routeSystem'] = $route->systemName;
-
-        $waypointsWithIntersecting = DB::select("SELECT w.*, intersecting.*
+        $wpt_set = DB::select("SELECT w.*, intersecting.*
 FROM waypoints w
   LEFT JOIN waypoints w2 ON (w.latitude = w2.latitude) AND (w.longitude = w2.longitude) AND (w.pointId != w2.pointId)
   LEFT JOIN routes intersecting ON w2.root = intersecting.root
-WHERE w.root = :root;", ['root'=>$route->root]);
+WHERE w.root = :root;", ["root" => $route->root]);
 
-        $aWaypoint = null;
-        $lastId = 0;
-
-        foreach ($waypointsWithIntersecting as $record) {
-            if($record->pointId != $lastId) {
-                if($aWaypoint != null) {
-                    $resp['waypoints'][] = $aWaypoint;
+        $wpt = null;
+        foreach ($wpt_set as $record) {
+            if ($wpt == null || $wpt['pointId'] != $record->pointId) {
+                if($wpt != null) {
+                    $resp['waypoints'][$wpt['pointId']] = $wpt;
                 }
-
-                $aWaypoint = [
-                    'id' => $record->pointId,
-                    'label' => $record->pointName,
-                    'lat' => $record->latitude,
-                    'lon' => $record->longitude,
-                    'visible' => $record->pointName[0] != '+',
-                    'elabel' => "",
-                    'edgeList' => [],
-                    'intersecting' => []
+                $wpt = [
+                    "pointId" => $record->pointId,
+                    "label" => $record->pointName,
+                    "lat" => $record->latitude,
+                    "lon" => $record->longitude,
+                    "elabel" => "",
+                    "edgeList" => [],
+                    "intersecting" => []
                 ];
-
-                $lastId = $record->pointId;
             }
 
             if($record->root != null) {
-                $aWaypoint['intersecting'][] = [
-                    'root' => $record->root,
-                    'route' => $record->route,
-                    'region' => $record->region,
-                    'banner' => $record->banner,
-                    'abbrev' => $record->abbrev,
-                    'city' => $record->city
+                $wpt['intersecting'][] = $this->routeinfo($record);
+            }
+        }
+        if($wpt != null) {
+            $resp['waypoints'][$wpt['pointId']] = $wpt;
+        }
+
+        $segmentSet = $route->segments()->orderBy('segmentId')->get();
+        if($traveler) {
+            $clinchedSet = $traveler
+                ->segments()
+                ->where('root', '=', $route->root)
+                ->orderBy('segmentId')
+                ->pluck('segments.segmentId');
+
+            $csIndex = 0;
+            foreach ($segmentSet as $item) {
+                if(($csIndex < sizeof($clinchedSet) ) && ($item->segmentId == $clinchedSet[$csIndex])) {
+                    $clinched = true;
+                    $csIndex += 1;
+                } else {
+                    $clinched = false;
+                }
+
+                $resp['segments'][] = [
+                    'segmentId' => $item->segmentId,
+                    'fromID' => $item['waypoint1'],
+                    'toID' => $item['waypoint2'],
+                    'clinched' => $clinched
+                ];
+            }
+        } else {
+            foreach ($segmentSet as $item) {
+                $resp['segments'][] = [
+                    'segmentId' => $item->segmentId,
+                    'fromID' => $item['waypoint1'],
+                    'toID' => $item['waypoint2'],
+                    'clinched' => false
                 ];
             }
         }
 
-        if($traveler) {
-            $resp['mapClinched'] = true;
-            $resp['traveler'] = $traveler->traveler;
-            $resp['clinched'] = $traveler->segments()
-                ->where('root', '=', $route->root)
-                ->pluck('segments.segmentId');
-        }
-
-        return $resp;
+        return [
+            'mapClinched' => ($traveler != null),
+            'genEdges' => true,
+            'routes' => [$resp]
+        ];
     }
 }

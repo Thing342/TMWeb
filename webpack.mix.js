@@ -12,6 +12,8 @@ let mix = require('laravel-mix');
  */
 
 mix.ts('resources/assets/ts/app.ts', 'public/dist/js')
+    .ts('resources/assets/ts/route.ts', 'public/dist/js')
+    .ts('resources/assets/ts/mapview.ts', 'public/dist/js')
     .sass('resources/assets/sass/app.sass', 'public/dist/css')
     .version()
     .sourceMaps();

@@ -215,31 +215,7 @@ var oldintersectionimage = L.icon({
     iconSize: [16, 16]
 });
 
-function convertUnit(measurement, fromUnit, toUnit) {
-    if (fromUnit === toUnit) return measurement;
 
-    if (fromUnit === 'mi' && toUnit === 'km') {
-        return measurement * 1.60934
-    }
-
-    if (fromUnit === 'km' && toUnit === 'mi') {
-        return measurement / 1.60934
-    }
-}
-
-function convertAllUnits(fromUnit, toUnit) {
-    $('.unit').each(function () {
-        let it = $(this);
-        let measurement = parseFloat(it.text());
-        let conversion = convertUnit(measurement, fromUnit, toUnit);
-        it.text(conversion.toFixed(2));
-    });
-
-    $('.units-text').each(function () {
-        let it = $(this);
-        it.text(toUnit);
-    });
-}
 
 // loadmap constructs and sets up the initial map
 function loadmap() {

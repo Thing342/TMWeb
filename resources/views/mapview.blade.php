@@ -7,7 +7,7 @@
 @section('before-container')
     <div class="my-2 px-2" id="map-main"
          style="overflow: auto; position: fixed; top: 60px; left: 0; right: 0; bottom: 0">
-        <div id="map" class="w-100 h-100"></div>
+        <div id="map" class="w-100 h-100" data-qs="/api/waypoints{!! $apiQueryString !!}"></div>
     </div>
 @endsection
 
@@ -97,51 +97,5 @@
 @endsection
 
 @section('js')
-    <!-- TODO: eliminate hack -->
-    <script type="application/javascript">
-        let units = 'mi';
-
-        $(document).ready(function () {
-            $.get("/api/waypoints{!! $apiQueryString !!}", function (data) {
-                console.log(data);
-                waypoints = data.waypoints;
-
-                newRouteIndices = data.newRouteIndices;
-                routeTier = data.routeTier;
-                routeColor = data.routeColor;
-                routeSystem = data.routeSystem;
-
-                traveler = data.traveler;
-
-                segments = data.segments;
-                clinched = data.clinched;
-
-                genEdges = data.genEdges;
-                mapClinched = data.mapClinched;
-
-                loadmap();
-                updateMap();
-
-                clinched.forEach((it) => {
-                    if (it === 209976) {
-                        console.log("Hello!")
-                    }
-                })
-            });
-        });
-
-        $('#unitsSelect').on('change', function () {
-            let newunits = this.value;
-            convertAllUnits(units, newunits);
-            units = newunits;
-        });
-
-        $('#showMarkers').on('click', function () {
-            showMarkersClicked();
-        });
-
-        $('tr.route-entry').on('click', function (event) {
-            window.location.href = '/routes/' + $(this).data('route');
-        })
-    </script>
+    <script type="application/javascript" src="{{ mix('/dist/js/mapview.js') }}"></script>
 @endsection

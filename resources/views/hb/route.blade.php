@@ -32,7 +32,7 @@
             </div>
 
             <div class="row">
-                <div id="map"
+                <div id="map" data-root="{{ $route->root }}"
                      style="overflow: auto; position: fixed; top: 180px; left: 390px; right: 0; bottom: 0"></div>
             </div>
         </main>
@@ -40,31 +40,5 @@
 @endsection
 
 @section('js')
-    <script type="application/javascript">
-        let units = 'mi';
-
-        $(document).ready(function () {
-            loadmap();
-            $.get("/api/waypoints?r={{ $route->root }}&u=thing342", function (data) {
-                console.log(data);
-                waypoints = data.waypoints;
-                genEdges = data.genEdges;
-                mapClinched = data.mapClinched;
-                routeColor = data.routeColor;
-                segments = data.segments;
-                clinched = data.clinched;
-                updateMap();
-            });
-        });
-
-        $('#unitsSelect').on('change', function () {
-           let newunits = this.value;
-           convertAllUnits(units, newunits);
-           units = newunits;
-        });
-
-        $('#showMarkers').on('click', function () {
-            showMarkersClicked();
-        });
-    </script>
+    <script type="application/javascript" src="{{ mix('/dist/js/route.js') }}"></script>
 @endsection
