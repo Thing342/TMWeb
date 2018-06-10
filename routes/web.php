@@ -28,6 +28,12 @@ Route::get('/routes/bySystemRegion/{system}/{region}', 'TMRouteController@index'
 
 Route::get('/routes/{route}', 'TMRouteController@read')->name('route.read');
 
-Route::get('/users/{traveler}/mapview', 'TMTravelerController@mapview')->name('mapview');
+
+Route::get('/users/{traveler}/mapview', 'TMTravelerController@mapview')->name('travelers.mapview');
+Route::get('/users/{traveler}/systems/{system}', 'TMTravelerController@systemPage')->name('travelers.system');
+Route::get('/users/{traveler}/region/{region}', 'TMTravelerController@regionPage')->name('travelers.region');
+Route::get('/users/{traveler}/pages/{region}/{system}', 'TMTravelerController@regionSystemPage')->name('travelers.page');
+Route::get('/users/{traveler}', 'TMTravelerController@read')->name('travelers.read');
+
 Route::get('/users/leaderboard', 'TMTravelerController@leaderboard')->name('travelers.leaderboard');
 Route::post('/users/change', 'TMTravelerController@changeUser')->name('travelers.change');

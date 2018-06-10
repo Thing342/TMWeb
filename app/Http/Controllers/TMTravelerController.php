@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\TMRegion;
 use App\TMRoute;
 use App\TMTraveler;
 
@@ -68,16 +69,39 @@ class TMTravelerController extends Controller
     {
         $travelers = TMTraveler::orderBy('overallActiveMileage', 'DESC')->get();
         $totalMileage = DB::select("SELECT sum(activeMileage) AS activeMileage, sum(activePreviewMileage) AS activePreviewMileage FROM overallMileageByRegion")[0];
+        $trav_rank = 1;
 
         $traveler = null;
         if ($request->session()->get('user')) {
             $traveler = TMTraveler::find($request->session()->get('user'));
+
+            $i = 1;
+            foreach ($travelers as $t) {
+                if ($t->traveler == $traveler->traveler) {
+                    $trav_rank = $i;
+                    break;
+                }
+                $i += 1;
+            }
         }
 
         return view('user.leaderboard', [
-           'travelers' => $travelers,
-           'totals' => $totalMileage,
-           'traveler' => $traveler
+            'travelers' => $travelers,
+            'totals' => $totalMileage,
+            'traveler' => $traveler,
+            'trav_rank' => $trav_rank
+        ]);
+    }
+
+    function read(TMTraveler $traveler) {
+        $traveler->load(['regions', 'systems', 'regionClinchedRoutes', 'systemClinchedRoutes', 'routes']);
+        $regionTotals = DB::table('overallMileageByRegion')->get()->keyBy('region');
+        $systemTotals = DB::table('systemMileage')->get()->keyBy('systemName');
+
+        return view('user.user', [
+            'traveler' => $traveler,
+            'regionTotals' => $regionTotals,
+            'systemTotals' => $systemTotals
         ]);
     }
 

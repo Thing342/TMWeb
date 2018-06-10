@@ -27,8 +27,29 @@ class TMTraveler extends Model
         return $this->belongsToMany('App\TMSegment', 'clinched', TRAVELER_PK, 'segmentID');
     }
 
-    function routes() {
+    public function routes() {
         return $this->belongsToMany('App\TMRoute', 'clinchedRoutes', TRAVELER_PK, 'route')
             ->withPivot('mileage', 'clinched');
+    }
+
+
+    public function regions() {
+        return $this->belongsToMany('App\TMRegion', 'clinchedOverallMileageByRegion', TRAVELER_PK, 'region')
+            ->withPivot('activeMileage', 'activePreviewMileage');
+    }
+
+    public function regionClinchedRoutes() {
+        return $this->belongsToMany('App\TMRegion', 'clinchedRoutesByRegion', TRAVELER_PK, 'region')
+            ->withPivot('active', 'activePreview');
+    }
+
+    public function systems() {
+        return $this->belongsToMany('App\TMSystem', 'clinchedSystemMileage', TRAVELER_PK, 'systemName')
+            ->withPivot('mileage');
+    }
+
+    public function systemClinchedRoutes() {
+        return $this->belongsToMany('App\TMSystem', 'clinchedRoutesBySystem', TRAVELER_PK, 'systemName')
+            ->withPivot('clinched');
     }
 }
