@@ -7,13 +7,14 @@
     <h4>{{ $title }}</h4>
     @component('components.beadcrumbs', ['links'=>$backstack, 'item'=>$title]) @endcomponent
 
-    <table class="table table-hover my-4">
+    <table id="routesTable" class="table table-hover my-4">
         <thead><tr>
             <td>Tier</td>
             <td>System</td>
             <td>Region</td>
             <td>Route Name</td>
             <td>LIST Name</td>
+            <td>Mileage</td>
             <td>Level</td>
             <td>Root</td>
         </tr></thead>
@@ -25,10 +26,21 @@
                     <td>{{ $route[\App\ROUTE_REGION] }}</td>
                     <td>{{ $route->display_name() }}</td>
                     <td>{{ $route->list_name() }}</td>
+                    <td data-order="{{ $route->mileage }}">{{ number_format($route->mileage, 2) }} mi</td>
                     <td>{{ $route->system[\App\SYSTEM_LEVEL] }}</td>
                     <td>{{ $route[\App\ROUTE_ROOT] }}</td>
                 </tr>
             @endforeach
         </tbody>
     </table>
+@endsection
+
+@section('js')
+<script type="application/javascript">
+    $(function () {
+       $('#routesTable').DataTable({
+           paging: false
+       });
+    });
+</script>
 @endsection
